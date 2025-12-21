@@ -1,4 +1,4 @@
-# 🏎️ F1 Race Predictor & Strategy Simulator
+#  F1 Race Predictor & Strategy Simulator
 
 A full-stack web application that predicts race outcomes for the 2026 F1 season and enables interactive what-if scenario analysis using machine learning and real-time data.
 
@@ -6,7 +6,7 @@ A full-stack web application that predicts race outcomes for the 2026 F1 season 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 🎯 Project Overview
+## Project Overview
 
 This project combines data engineering, machine learning, and full-stack development to create an intelligent F1 race prediction platform. Users can:
 - View AI-powered predictions for upcoming Grand Prix races
@@ -14,30 +14,30 @@ This project combines data engineering, machine learning, and full-stack develop
 - Run interactive "what-if" simulations (weather changes, pit strategies, grid penalties)
 - Compare prediction accuracy against actual race outcomes
 
-## 🚀 Features
+##  Features
 
 ### Current Features
-- ✅ FastAPI backend with RESTful API
-- ✅ F1 data extraction using FastF1 library
-- ✅ Historical race data analysis (2019-2024)
-- ✅ Docker containerization support
+-  FastAPI backend with RESTful API
+-  F1 data extraction using FastF1 library
+-  Historical race data analysis (2019-2024)
+-  Docker containerization support
 
 ### In Development
-- 🔄 PostgreSQL database with optimized schema
-- 🔄 ETL pipeline for historical data ingestion
-- 🔄 Machine learning prediction models
-- 🔄 Interactive React frontend
-- 🔄 Real-time race strategy simulator
+-  PostgreSQL database with optimized schema
+-  ETL pipeline for historical data ingestion
+-  Machine learning prediction models
+-  Interactive React frontend
+-  Real-time race strategy simulator
 
 ### Planned Features
-- 📅 Podium probability predictions
-- 📅 Fastest lap forecasting
-- 📅 Monte Carlo strategy simulation
-- 📅 Weather impact analysis
-- 📅 WebSocket real-time updates
-- 📅 User prediction leaderboards
+-  Podium probability predictions
+-  Fastest lap forecasting
+-  Monte Carlo strategy simulation
+-  Weather impact analysis
+-  WebSocket real-time updates
+-  User prediction leaderboards
 
-## 📊 Tech Stack
+##  Tech Stack
 
 ### Backend
 - **FastAPI** - High-performance Python web framework
@@ -59,7 +59,7 @@ This project combines data engineering, machine learning, and full-stack develop
 - **GitHub Actions** - CI/CD pipeline (planned)
 - **AWS/GCP** - Cloud deployment (planned)
 
-## 🏗️ Project Structure
+##  Project Structure
 ```
 f1-predictor/
 ├── backend/
@@ -82,7 +82,7 @@ f1-predictor/
 └── README.md
 ```
 
-## 🛠️ Setup Instructions
+##  Setup Instructions
 
 ### Prerequisites
 - Python 3.11 or higher
@@ -147,7 +147,7 @@ cd backend
 python scripts/explore_fastf1.py
 ```
 
-## 📚 API Documentation
+##  API Documentation
 
 Once the server is running, visit:
 - **Swagger UI**: http://localhost:8000/docs
@@ -163,38 +163,8 @@ POST /api/predict   - Get race predictions (coming soon)
 POST /api/simulate  - Run strategy simulation (coming soon)
 ```
 
-## 🗓️ Development Roadmap
 
-### Week 1: Data Infrastructure ✅ (Current)
-- [x] Project setup and structure
-- [x] FastAPI backend skeleton
-- [x] F1 data exploration with FastF1
-- [ ] Database schema design
-- [ ] ETL pipeline for historical data
-- [ ] Basic API endpoints
-
-### Week 2: Prediction Engine
-- [ ] Feature engineering pipeline
-- [ ] Train baseline ML models
-- [ ] Prediction API endpoints
-- [ ] Monte Carlo simulator
-- [ ] Redis caching implementation
-
-### Week 3: Frontend Development
-- [ ] React app scaffolding
-- [ ] Race dashboard UI
-- [ ] Prediction visualization
-- [ ] Interactive what-if simulator
-- [ ] Real-time updates with WebSockets
-
-### Week 4: Deployment & Polish
-- [ ] CI/CD pipeline with GitHub Actions
-- [ ] Cloud deployment (AWS/GCP)
-- [ ] Monitoring and logging
-- [ ] Performance optimization
-- [ ] Documentation completion
-
-## 🔬 Technical Highlights
+##  Technical Highlights
 
 ### Data Engineering
 - ETL pipeline processing 5+ years of F1 historical data
@@ -212,7 +182,7 @@ POST /api/simulate  - Run strategy simulation (coming soon)
 - Caching strategy for performance optimization
 - Scalable database schema design
 
-## 📈 Model Performance (Goals)
+##  Model Performance (Goals)
 
 | Model | Metric | Target |
 |-------|--------|--------|
@@ -220,7 +190,7 @@ POST /api/simulate  - Run strategy simulation (coming soon)
 | Fastest Lap | RMSE | < 0.5s |
 | Strategy Simulation | Coverage | 90% confidence |
 
-## 🤝 Contributing
+##  Contributing
 
 This is a personal portfolio project, but suggestions and feedback are welcome!
 
@@ -230,33 +200,31 @@ This is a personal portfolio project, but suggestions and feedback are welcome!
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Author
+##  Author
 
 **Shivam Lahoti**
 - Graduate Student @ Northeastern University
 - MS in Software Engineering Systems
 - Research Assistant in Data Engineering
 - [GitHub](https://github.com/Shivam-Lahoti)
-- [LinkedIn](https://www.linkedin.com/in/shivam-lahoti) *(Update with your actual LinkedIn)*
+- [LinkedIn](https://www.linkedin.com/in/shivam-lahoti-2811501b1/)
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - [FastF1](https://github.com/theOehrly/Fast-F1) - For excellent F1 data access
 - [FastAPI](https://fastapi.tiangolo.com/) - For the amazing Python web framework
 - [Formula 1](https://www.formula1.com/) - For the inspiration
 
-## 📊 Project Status
+##  Project Status
 
-**Current Status**: 🚧 Active Development - Week 1
-
-Last Updated: December 21, 2024
+**Current Status**:  Active Development 
 
 ---
 
-⭐ Star this repo if you find it interesting!
+ Star this repo if you find it interesting!
 
-🏎️ Built with passion for F1 and software engineering
+ Built with passion for F1 and software engineering
