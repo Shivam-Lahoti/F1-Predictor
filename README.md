@@ -207,9 +207,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ##  Author
 
 **Shivam Lahoti**
-- Graduate Student @ Northeastern University
-- MS in Software Engineering Systems
-- Research Assistant in Data Engineering
 - [GitHub](https://github.com/Shivam-Lahoti)
 - [LinkedIn](https://www.linkedin.com/in/shivam-lahoti-2811501b1/)
 
