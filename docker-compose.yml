@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: f1_postgres
+    environment:
+      POSTGRES_USER: f1user
+      POSTGRES_PASSWORD: f1password
+      POSTGRES_DB: f1_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - f1_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: f1_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - f1_network
+
+  backend:
+    build: ./backend
+    container_name: f1_backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://f1user:f1password@postgres:5432/f1_database
+      REDIS_URL: redis://redis:6379
+    networks:
+      - f1_network
+
+volumes:
+  postgres_data:
+
+networks:
+  f1_network:
+    driver: bridge
