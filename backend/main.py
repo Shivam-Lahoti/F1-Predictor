@@ -24,16 +24,21 @@ def read_root():
     return{
         "message" : "F1 Race Predictor API",
         "Status" : "running",
-        "version" : "0.1.0"
+        "version" : "0.1.0",
+        "environment" : os.getenv("ENVIRONMENT", "unknown")
 
     }
 
 @app.get("/health")
 def health_check():
     return {
-        "status" : "healthy"
+        "status" : "healthy",
+        "database": os.getenv("DATABASE_URL", "Not configured").split("@")[-1] if os.getenv("DATABASE_URL") else "Not configured"
     }
 
 if __name__ == "__main__":
     import uvicorn
+    host = os.getenv("API_HOST", "0.0.0.0")
+    port = int(os.getenv("API_PORT", "8000"))
+    
     uvicorn.run(app, host= "0.0.0.0" , port = 8000)
