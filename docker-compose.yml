@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: f1password
       POSTGRES_DB: f1_database
     ports:
-      - "5433:5432"  # ← Change this from 5432:5432 to 5433:5432
+      - "5433:5432"  
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
