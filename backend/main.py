@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.races import router as races_router
+from api.drivers import router as drivers_router
+from api.circuits import router as circuits_router
+from api.stats import router as stats_router
+from api.analytics import router as analytics_router
 import os
 from dotenv import load_dotenv
 
@@ -9,7 +13,7 @@ load_dotenv()
 app =FastAPI(
 
     title= " F1 Race Prrdictor API",
-    description = "Predict F1 race outcomes and simulate statergies",
+    description = "Comprehensive F1 data API with ML-powered predictions",
     version ="0.1.0"
 )
 app.add_middleware(
@@ -21,15 +25,25 @@ app.add_middleware(
 )
 
 app.include_router(races_router)
+app.include_router(drivers_router)
+app.include_router(circuits_router)
+app.include_router(stats_router)
+app.include_router(analytics_router)
 
 @app.get("/")
 def read_root():
-    return{
-        "message" : "F1 Race Predictor API",
-        "Status" : "running",
-        "version" : "0.1.0",
-        "environment" : os.getenv("ENVIRONMENT", "unknown")
-
+    return {
+        "message": "F1 Race Predictor API",
+        "status": "running",
+        "version": "1.0.0",
+        "endpoints": {
+            "races": "/api/races",
+            "drivers": "/api/drivers",
+            "circuits": "/api/circuits",
+            "stats": "/api/stats",
+            "analytics": "/api/analytics",
+            "docs": "/docs"
+        }
     }
 
 @app.get("/health")

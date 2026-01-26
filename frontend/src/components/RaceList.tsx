@@ -13,7 +13,7 @@ const RaceList = () => {
   
   const selectedYear = searchParams.get('year') 
     ? Number(searchParams.get('year')) 
-    : 2017;
+    : 2025;
 
   // All available years (2015-2025)
   const years = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
@@ -41,8 +41,8 @@ const RaceList = () => {
   
   const filteredRaces = races.filter(race => 
     race.race_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (race.Circuit?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (race.Circuit?.location || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (race.circuit?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (race.circuit?.location || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -154,8 +154,8 @@ const RaceList = () => {
                     `Race Details\n\n` +
                     `${race.race_name}\n` +
                     `Round ${race.round_number}\n\n` +
-                    `🏟️ Circuit: ${race.Circuit?.name || 'Circuit data unavailable'}\n` +
-                    `📍 Location: ${race.Circuit?.location || 'N/A'}, ${race.Circuit?.country || 'N/A'}\n` +
+                    `🏟️ Circuit: ${race.circuit?.name || 'Circuit data unavailable'}\n` +
+                    `📍 Location: ${race.circuit?.location || 'N/A'}, ${race.circuit?.country || 'N/A'}\n` +
                     `📅 Date: ${race.race_date ? new Date(race.race_date).toLocaleDateString() : 'N/A'}`
                   );
                 }}
@@ -178,15 +178,15 @@ const RaceList = () => {
                   </h3>
                   
                   <div className="space-y-3 mb-6">
-                    {race.Circuit ? (
+                    {race.circuit ? (
                       <>
                         <div className="flex items-start gap-3 text-gray-400">
                           <span className="text-xl flex-shrink-0">🏟️</span>
-                          <span className="text-sm leading-relaxed">{race.Circuit.name}</span>
+                          <span className="text-sm leading-relaxed">{race.circuit.name}</span>
                         </div>
                         <div className="flex items-start gap-3 text-gray-400">
                           <span className="text-xl flex-shrink-0">📍</span>
-                          <span className="text-sm leading-relaxed">{race.Circuit.location}, {race.Circuit.country}</span>
+                          <span className="text-sm leading-relaxed">{race.circuit.location}, {race.circuit.country}</span>
                         </div>
                       </>
                     ) : (

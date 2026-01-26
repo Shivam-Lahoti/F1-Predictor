@@ -1,7 +1,36 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  
+  const [stats, setStats] = useState({
+    total_races: 241,
+    total_drivers: 120,
+    total_circuits: 35,
+    years_covered: 11,
+    seasons: [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015]
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real stats from API
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const response = await api.get('/api/stats');
+      setStats(response.data);
+      console.log('Stats loaded:', response.data);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+      // Keep default stats if API fails
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-f1-dark via-f1-darker to-black">
@@ -46,8 +75,8 @@ const HomePage = () => {
             
             {/* Description */}
             <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-              Explore a decade of Formula 1 data. Analyze driver performance, 
-              predict race outcomes, and unlock insights from the world's premier motorsport championship.
+              Explore 11 seasons of Formula 1 data spanning {stats.total_races} races. Analyze driver performance, 
+              predict race outcomes, and unlock insights from over a decade of premier motorsport racing.
             </p>
             
             {/* CTA Buttons */}
@@ -64,7 +93,7 @@ const HomePage = () => {
               </button>
               
               <button
-                onClick={() => navigate('/races')}
+                onClick={() => navigate('/analytics')}
                 className="bg-transparent border-2 border-gray-600 hover:border-f1-red text-white px-12 py-5 rounded-xl text-xl font-bold hover:bg-f1-red/10 transition-all backdrop-blur-sm"
               >
                 View Analytics
@@ -87,25 +116,25 @@ const HomePage = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <GlassStatCard
             icon="🏁"
-            number="71"
+            number={stats.total_races?.toString() || "241"}
             label="Historic Races"
             gradient="from-blue-600 to-blue-800"
           />
           <GlassStatCard
             icon="👥"
-            number="40+"
+            number={`${stats.total_drivers || 120}+`}
             label="F1 Drivers"
             gradient="from-green-600 to-emerald-800"
           />
           <GlassStatCard
             icon="🗺️"
-            number="20+"
+            number={`${stats.total_circuits || 35}+`}
             label="Global Circuits"
             gradient="from-purple-600 to-indigo-800"
           />
           <GlassStatCard
             icon="📊"
-            number="35K+"
+            number="120K+"
             label="Data Points"
             gradient="from-orange-600 to-red-800"
           />
@@ -124,7 +153,7 @@ const HomePage = () => {
             Powered by <span className="text-f1-red">Data & AI</span>
           </h2>
           <p className="text-gray-400 text-xl max-w-2xl mx-auto">
-            Advanced analytics and machine learning models trained on 10 years of Formula 1 racing data
+            Advanced analytics and machine learning models trained on {stats.years_covered} years of Formula 1 racing data
           </p>
         </div>
 
@@ -133,7 +162,7 @@ const HomePage = () => {
             icon="📈"
             title="Historical Analysis"
             description="Deep dive into comprehensive race breakdowns with lap-by-lap analysis, qualifying performance, and decade-spanning trends."
-            features={['71 Complete Races', 'Lap Time Data', 'Weather Tracking', 'Pit Stop Analysis']}
+            features={[`${stats.total_races} Races`, 'Lap Time Data', 'Weather Tracking', 'Pit Stop Analysis']}
             onClick={() => navigate('/races')}
           />
           
@@ -150,8 +179,8 @@ const HomePage = () => {
             icon="⚡"
             title="Driver Insights"
             description="Comprehensive driver statistics with career performance metrics, circuit mastery analysis, and competitive comparisons."
-            features={['Career Stats', 'Performance Graphs', 'Head-to-Head', 'Form Analysis']}
-            onClick={() => navigate('/races')}
+            features={[`${stats.total_drivers}+ Drivers`, 'Performance Graphs', 'Head-to-Head', 'Form Analysis']}
+            onClick={() => navigate('/drivers')}
           />
         </div>
       </div>
@@ -160,7 +189,7 @@ const HomePage = () => {
       <div className="container mx-auto px-4 py-20 border-t border-gray-800/50">
         <div className="text-center mb-12">
           <h3 className="text-4xl font-bold mb-4">
-            Data Coverage <span className="text-f1-red">2015-2024</span>
+            Data Coverage <span className="text-f1-red">2015-2025</span>
           </h3>
           <p className="text-gray-400 text-lg">
             Click any year to explore that season's races
@@ -168,7 +197,7 @@ const HomePage = () => {
         </div>
         
         <div className="flex flex-wrap justify-center gap-4">
-          {[2015, 2016, 2017, 2018, 2024].map((year, index) => (
+          {stats.seasons.map((year: number, index: number) => (
             <div
               key={year}
               onClick={() => navigate(`/races?year=${year}`)}
@@ -181,7 +210,7 @@ const HomePage = () => {
               <div className="relative bg-gradient-to-br from-f1-gray-800 to-f1-gray-700 hover:from-f1-red hover:to-red-800 px-10 py-8 rounded-2xl font-bold border border-gray-700 hover:border-f1-red transform hover:scale-110 transition-all shadow-glow">
                 <div className="text-4xl font-black mb-2">{year}</div>
                 <div className="text-xs text-gray-400 group-hover:text-white uppercase tracking-wider">
-                  {year === 2024 ? '1 Race' : year === 2018 ? '10 Races' : year === 2016 ? '21 Races' : '19-20 Races'}
+                  Click to View
                 </div>
               </div>
             </div>
@@ -204,7 +233,7 @@ const HomePage = () => {
               Ready to Dive Into F1 Data?
             </h3>
             <p className="text-gray-400 mb-10 text-lg md:text-xl max-w-2xl mx-auto">
-              Access comprehensive race statistics, driver analytics, and predictive insights from a decade of Formula 1 racing
+              Access comprehensive race statistics, driver analytics, and predictive insights from over a decade of Formula 1 racing
             </p>
             <button
               onClick={() => navigate('/races')}
@@ -230,7 +259,7 @@ const HomePage = () => {
             F1 Race Predictor - Built with React, FastAPI & Machine Learning
           </p>
           <p className="text-gray-600 text-sm">
-            Data: 2015-2024 Formula 1 Seasons | Built by Shivam Lahoti
+            Data: 2015-2025 Formula 1 Seasons ({stats.total_races} Races) | Built by Shivam Lahoti
           </p>
         </div>
       </footer>

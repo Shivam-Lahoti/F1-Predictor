@@ -22,7 +22,7 @@ export interface Race {
   round_number: number;
   race_name: string;
   race_date: string | null;
-  Circuit?: Circuit;
+  circuit?: Circuit;
 }
 
 export interface RaceResult {
