@@ -6,6 +6,9 @@ interface Driver {
   id: number;
   code: string;
   name: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
   nationality: string;
   number: number | null;
   races: number;
@@ -27,6 +30,9 @@ interface DriverSeasonData {
   driver: {
     code: string;
     name: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
     nationality: string;
     number: number | null;
   };
@@ -51,17 +57,16 @@ const DriversPage = () => {
     loadDrivers();
   }, []);
 
-    const loadDrivers = async () => {
+  const loadDrivers = async () => {
     try {
-        const response = await api.get('/api/drivers');
-        console.log('Drivers API response:', response.data);
-        setDrivers(response.data);
+      const response = await api.get('/api/drivers');
+      setDrivers(response.data);
     } catch (error) {
-        console.error('Error loading drivers:', error);
+      console.error('Error loading drivers:', error);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    };
+  };
 
   const loadDriverSeasons = async (driverCode: string) => {
     setLoadingSeasons(true);
@@ -75,15 +80,21 @@ const DriversPage = () => {
     }
   };
 
-  const filteredDrivers = drivers.filter(driver =>
-    driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (driver.nationality || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDrivers = drivers.filter(driver => {
+    const q = searchTerm.toLowerCase();
+    return (
+      driver.name.toLowerCase().includes(q) ||
+      driver.code.toLowerCase().includes(q) ||
+      (driver.first_name || '').toLowerCase().includes(q) ||
+      (driver.last_name || '').toLowerCase().includes(q) ||
+      (driver.full_name || '').toLowerCase().includes(q) ||
+      (driver.nationality || '').toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-f1-dark via-f1-darker to-black pb-20">
-      
+
       {/* Header */}
       <div className="bg-gradient-to-b from-f1-dark to-transparent border-b border-gray-800/50">
         <div className="container mx-auto px-4 py-12">
@@ -110,7 +121,7 @@ const DriversPage = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by driver name, code, or nationality..."
+                placeholder="Search by name, first name, code, or nationality..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full bg-f1-gray-800 border border-gray-700 focus:border-f1-red rounded-xl px-6 py-4 text-white placeholder-gray-500 outline-none transition-all shadow-lg focus:shadow-neon-red"
@@ -124,7 +135,7 @@ const DriversPage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-12">
-        
+
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin text-6xl mb-4">🏎️</div>
@@ -132,11 +143,11 @@ const DriversPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             {/* Drivers List */}
             <div className="lg:col-span-2">
               <h2 className="text-3xl font-bold mb-6">All Drivers</h2>
-              
+
               <div className="bg-f1-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -158,13 +169,12 @@ const DriversPage = () => {
                           onClick={() => loadDriverSeasons(driver.code)}
                           className="border-b border-gray-800 hover:bg-f1-red/10 hover:border-f1-red cursor-pointer transition-all group"
                         >
-                          <td className="py-4 px-6 text-gray-400">
-                            {index + 1}
-                          </td>
+                          <td className="py-4 px-6 text-gray-400">{index + 1}</td>
                           <td className="py-4 px-6">
                             <div className="font-bold text-lg group-hover:text-f1-red transition-colors">
-                              {driver.name}
+                              {driver.full_name || driver.name}
                             </div>
+                            <div className="text-gray-500 text-xs">{driver.name}</div>
                           </td>
                           <td className="py-4 px-6 text-center">
                             <div className="inline-block bg-f1-red/20 border border-f1-red/40 text-f1-red px-3 py-1 rounded-full text-sm font-bold">
@@ -184,9 +194,7 @@ const DriversPage = () => {
                               <span className="text-gray-600">0</span>
                             )}
                           </td>
-                          <td className="py-4 px-6 text-right text-gray-400">
-                            {driver.races}
-                          </td>
+                          <td className="py-4 px-6 text-right text-gray-400">{driver.races}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -199,11 +207,14 @@ const DriversPage = () => {
             <div className="lg:col-span-1">
               {selectedDriver ? (
                 <div className="bg-gradient-to-br from-f1-gray-800 to-f1-gray-700 rounded-2xl p-6 border border-f1-red shadow-neon-red sticky top-24 animate-slide-up">
-                  
+
                   {/* Driver Header */}
                   <div className="text-center mb-6 pb-6 border-b border-gray-700">
                     <div className="text-6xl mb-3">🏎️</div>
-                    <h3 className="text-3xl font-bold mb-2">{selectedDriver.driver.name}</h3>
+                    <h3 className="text-3xl font-bold mb-1">
+                      {selectedDriver.driver.full_name || selectedDriver.driver.name}
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-3">{selectedDriver.driver.name}</p>
                     <div className="flex items-center justify-center gap-3">
                       <span className="bg-f1-red/20 border border-f1-red/40 text-f1-red px-4 py-1 rounded-full text-sm font-bold">
                         {selectedDriver.driver.code}
@@ -230,30 +241,17 @@ const DriversPage = () => {
                           Career Totals
                         </h4>
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-f1-dark/50 rounded-lg p-4 text-center">
-                            <div className="text-3xl font-bold text-f1-red">
-                              {selectedDriver.career_totals.total_wins}
+                          {[
+                            { label: 'Wins',    value: selectedDriver.career_totals.total_wins,               color: 'text-f1-red' },
+                            { label: 'Podiums', value: selectedDriver.career_totals.total_podiums,            color: 'text-white' },
+                            { label: 'Points',  value: selectedDriver.career_totals.total_points.toFixed(0),  color: 'text-white' },
+                            { label: 'Races',   value: selectedDriver.career_totals.total_races,              color: 'text-white' },
+                          ].map(({ label, value, color }) => (
+                            <div key={label} className="bg-f1-dark/50 rounded-lg p-4 text-center">
+                              <div className={`text-3xl font-bold ${color}`}>{value}</div>
+                              <div className="text-xs text-gray-400 uppercase">{label}</div>
                             </div>
-                            <div className="text-xs text-gray-400 uppercase">Wins</div>
-                          </div>
-                          <div className="bg-f1-dark/50 rounded-lg p-4 text-center">
-                            <div className="text-3xl font-bold">
-                              {selectedDriver.career_totals.total_podiums}
-                            </div>
-                            <div className="text-xs text-gray-400 uppercase">Podiums</div>
-                          </div>
-                          <div className="bg-f1-dark/50 rounded-lg p-4 text-center">
-                            <div className="text-3xl font-bold">
-                              {selectedDriver.career_totals.total_points.toFixed(0)}
-                            </div>
-                            <div className="text-xs text-gray-400 uppercase">Points</div>
-                          </div>
-                          <div className="bg-f1-dark/50 rounded-lg p-4 text-center">
-                            <div className="text-3xl font-bold">
-                              {selectedDriver.career_totals.total_races}
-                            </div>
-                            <div className="text-xs text-gray-400 uppercase">Races</div>
-                          </div>
+                          ))}
                         </div>
                       </div>
 
@@ -270,9 +268,7 @@ const DriversPage = () => {
                             >
                               <div className="flex items-center justify-between mb-3">
                                 <div className="text-xl font-bold">{season.year}</div>
-                                <div className="text-sm text-gray-400">
-                                  {season.races} races
-                                </div>
+                                <div className="text-sm text-gray-400">{season.races} races</div>
                               </div>
                               <div className="grid grid-cols-4 gap-2 text-sm">
                                 <div className="text-center">
@@ -313,19 +309,10 @@ const DriversPage = () => {
         )}
       </div>
 
-      {/* Custom Scrollbar CSS */}
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #1E1E2E;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #E10600;
-          border-radius: 10px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1E1E2E; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E10600; border-radius: 10px; }
       `}</style>
     </div>
   );
