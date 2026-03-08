@@ -38,23 +38,32 @@ def get_or_create_driver(session_obj, abbr, info=None):
     if pd.isna(abbr) or not abbr:
         return None
     abbr = str(abbr).strip()
+
+    # Always look up by code - codes are unique per driver across all seasons
     driver = session_obj.query(Driver).filter_by(code=abbr).first()
-    if not driver and info is not None:
-        try:
-            num = int(info.get('DriverNumber', 0)) if pd.notna(info.get('DriverNumber')) else None
-        except (ValueError, TypeError):
-            num = None
-        driver = Driver(
-            driver_number=num,
-            code=abbr,
-            first_name=str(info.get('FirstName', '')),
-            last_name=str(info.get('LastName', '')),
-            broadcast_name=str(info.get('BroadcastName', abbr)),
-            nationality=str(info.get('CountryCode', 'Unknown'))
-        )
-        session_obj.add(driver)
-        session_obj.commit()
-        print(f"  Created driver: {driver.broadcast_name} ({abbr})")
+    if driver:
+        return driver
+
+    if info is None:
+        print(f"  WARNING - driver {abbr} not in DB and no info provided, skipping")
+        return None
+
+    first  = str(info.get('FirstName', '')).strip()
+    last   = str(info.get('LastName', '')).strip()
+    bcast  = str(info.get('BroadcastName', '')).strip()
+    nation = str(info.get('CountryCode', '')).strip()
+
+    driver = Driver(
+        driver_number=None,          # intentionally omitted - numbers reused across eras
+        code=abbr,
+        first_name=first,
+        last_name=last,
+        broadcast_name=bcast if bcast else abbr,
+        nationality=nation if nation else 'Unknown'
+    )
+    session_obj.add(driver)
+    session_obj.commit()
+    print(f"  Created driver: {first} {last} ({abbr})")
     return driver
 
 def get_or_create_team(session_obj, team_name):
@@ -198,9 +207,16 @@ def main():
 
     success, failed = 0, []
 
+    import time
+
     for i, row in enumerate(rows, 1):
         race_id, year, rnd, name = row
         print(f"\n[{i}/{len(rows)}] {year} -- {name}")
+
+        # Small delay every 5 races to avoid API rate limiting
+        if i > 1 and i % 5 == 0:
+            print("  Pausing 10s to avoid API rate limiting...")
+            time.sleep(10)
 
         race_entry = session_obj.query(Race).filter_by(id=race_id).first()
 
@@ -226,7 +242,9 @@ def main():
             print(f"  DONE: {year} {name}")
 
         except Exception as e:
+            import traceback
             print(f"  FAILED: {year} {name} -- {e}")
+            traceback.print_exc()
             failed.append(f"{year} {name}")
             session_obj.rollback()
             continue

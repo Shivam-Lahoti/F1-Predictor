@@ -72,5 +72,5 @@ for _, row in race_session.results.iterrows():
         session_obj.rollback()
         break
 
-session_obj.rollback()  # don't actually save - this is just a test
+session_obj.rollback()  
 print("\nDebug complete.")

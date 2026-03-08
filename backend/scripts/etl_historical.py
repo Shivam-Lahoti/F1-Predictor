@@ -50,34 +50,36 @@ def get_or_create_circuit(session_obj, event):
 
 
 def get_or_create_driver(session_obj, driver_abbr, driver_info=None):
-    """Get or create driver. Always uses driver_info to fill missing fields."""
+    """Get or create driver. Always looks up by code — never by driver number,
+    as numbers are reused across seasons (e.g. Vettel and Button both used #22)."""
     if pd.isna(driver_abbr) or not driver_abbr:
         return None
 
     driver_abbr = str(driver_abbr).strip()
     driver = session_obj.query(Driver).filter_by(code=driver_abbr).first()
+    if driver:
+        return driver
 
-    if not driver:
-        if driver_info is None:
-            print(f"  WARNING - driver {driver_abbr} not in DB and no info provided, skipping")
-            return None
-        try:
-            num = int(driver_info.get('DriverNumber', 0)) if pd.notna(driver_info.get('DriverNumber')) else None
-        except (ValueError, TypeError):
-            num = None
+    if driver_info is None:
+        print(f"  WARNING - driver {driver_abbr} not in DB and no info provided, skipping")
+        return None
 
-        driver = Driver(
-            driver_number=num,
-            code=driver_abbr,
-            first_name=str(driver_info.get('FirstName', '')),
-            last_name=str(driver_info.get('LastName', '')),
-            broadcast_name=str(driver_info.get('BroadcastName', driver_abbr)),
-            nationality=str(driver_info.get('CountryCode', 'Unknown'))
-        )
-        session_obj.add(driver)
-        session_obj.commit()
-        print(f"  Created driver: {driver.broadcast_name} ({driver_abbr})")
+    first  = str(driver_info.get('FirstName', '')).strip()
+    last   = str(driver_info.get('LastName', '')).strip()
+    bcast  = str(driver_info.get('BroadcastName', '')).strip()
+    nation = str(driver_info.get('CountryCode', '')).strip()
 
+    driver = Driver(
+        driver_number=None,          # intentionally omitted - reused across eras
+        code=driver_abbr,
+        first_name=first,
+        last_name=last,
+        broadcast_name=bcast if bcast else driver_abbr,
+        nationality=nation if nation else 'Unknown'
+    )
+    session_obj.add(driver)
+    session_obj.commit()
+    print(f"  Created driver: {driver.first_name} {driver.last_name} ({driver_abbr})")
     return driver
 
 
