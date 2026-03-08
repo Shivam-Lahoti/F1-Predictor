@@ -1,7 +1,7 @@
 """
 Statistics and analytics API endpoints
 """
-from fastapi import APIRouter
+from fastapi import APIRouter,HTTPException
 import sys
 from pathlib import Path
 
