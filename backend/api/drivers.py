@@ -8,7 +8,6 @@ backend_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(backend_dir))
 
 from models.database import get_session, Driver, RaceResult, Race
-from sqlalchemy import func, desc
 
 router = APIRouter(prefix="/api/drivers", tags=["drivers"])
 
@@ -17,12 +16,12 @@ router = APIRouter(prefix="/api/drivers", tags=["drivers"])
 def get_all_drivers(sort_by: str = "name"):
     """Get all drivers sorted alphabetically"""
     session = get_session()
-    
     try:
-        # Get drivers with their stats
         drivers = session.query(
             Driver.id,
             Driver.code,
+            Driver.first_name,
+            Driver.last_name,
             Driver.broadcast_name,
             Driver.nationality,
             Driver.driver_number,
@@ -32,15 +31,21 @@ def get_all_drivers(sort_by: str = "name"):
             func.sum(case((RaceResult.final_position <= 3, 1), else_=0)).label('podiums')
         )\
         .outerjoin(RaceResult, Driver.id == RaceResult.driver_id)\
-        .group_by(Driver.id, Driver.code, Driver.broadcast_name, Driver.nationality, Driver.driver_number)\
+        .group_by(
+            Driver.id, Driver.code, Driver.first_name, Driver.last_name,
+            Driver.broadcast_name, Driver.nationality, Driver.driver_number
+        )\
         .order_by(Driver.broadcast_name)\
         .all()
-        
+
         return [
             {
                 "id": d.id,
                 "code": d.code,
                 "name": d.broadcast_name or d.code,
+                "first_name": d.first_name or '',
+                "last_name": d.last_name or '',
+                "full_name": f"{d.first_name or ''} {d.last_name or ''}".strip(),
                 "nationality": d.nationality,
                 "number": d.driver_number,
                 "races": d.races or 0,
@@ -49,9 +54,9 @@ def get_all_drivers(sort_by: str = "name"):
                 "podiums": d.podiums or 0
             }
             for d in drivers
-            if d.broadcast_name and d.broadcast_name.strip()  # Filter out blanks
+            if d.broadcast_name and d.broadcast_name.strip()
         ]
-        
+
     finally:
         session.close()
 
@@ -60,20 +65,17 @@ def get_all_drivers(sort_by: str = "name"):
 def get_driver_seasons(driver_code: str):
     """Get season-by-season performance for a driver"""
     session = get_session()
-    
     try:
         driver = session.query(Driver).filter_by(code=driver_code.upper()).first()
-        
         if not driver:
             raise HTTPException(status_code=404, detail="Driver not found")
-        
-        # Get performance by season - FIXED
+
         seasons = session.query(
             Race.year,
             func.count(RaceResult.id).label('races'),
             func.sum(RaceResult.points).label('points'),
-            func.sum(case((RaceResult.final_position == 1, 1), else_=0)).label('wins'),  # Fixed!
-            func.sum(case((RaceResult.final_position <= 3, 1), else_=0)).label('podiums'),  # Fixed!
+            func.sum(case((RaceResult.final_position == 1, 1), else_=0)).label('wins'),
+            func.sum(case((RaceResult.final_position <= 3, 1), else_=0)).label('podiums'),
             func.avg(RaceResult.final_position).label('avg_position')
         )\
         .join(RaceResult, Race.id == RaceResult.race_id)\
@@ -82,11 +84,14 @@ def get_driver_seasons(driver_code: str):
         .group_by(Race.year)\
         .order_by(Race.year.desc())\
         .all()
-        
+
         return {
             "driver": {
                 "code": driver.code,
                 "name": driver.broadcast_name or driver.code,
+                "first_name": driver.first_name or '',
+                "last_name": driver.last_name or '',
+                "full_name": f"{driver.first_name or ''} {driver.last_name or ''}".strip(),
                 "nationality": driver.nationality or 'Unknown',
                 "number": driver.driver_number
             },
@@ -108,6 +113,6 @@ def get_driver_seasons(driver_code: str):
                 "total_podiums": sum(s.podiums or 0 for s in seasons)
             }
         }
-        
+
     finally:
         session.close()

@@ -31,11 +31,15 @@ def get_races(year: Optional[int] = None):
             {
                 "id": r.id,
                 "year": r.year,
-                "round": r.round_number,
-                "name": r.race_name,
-                "circuit": r.circuit.name if r.circuit else None,
-                "country": r.circuit.country if r.circuit else None,
-                "date": str(r.race_date) if r.race_date else None
+                "round_number": r.round_number,
+                "race_name": r.race_name,
+                "race_date": str(r.race_date) if r.race_date else None,
+                "circuit": {
+                    "id": r.circuit.id,
+                    "name": r.circuit.name,
+                    "location": r.circuit.location,
+                    "country": r.circuit.country
+                } if r.circuit else None
             }
             for r in races
         ]
@@ -67,12 +71,15 @@ def get_race(race_id: int):
         return {
             "id": race.id,
             "year": race.year,
-            "round": race.round_number,
-            "name": race.race_name,
-            "circuit": race.circuit.name if race.circuit else None,
-            "country": race.circuit.country if race.circuit else None,
-            "location": race.circuit.location if race.circuit else None,
-            "date": str(race.race_date) if race.race_date else None
+            "round_number": race.round_number,
+            "race_name": race.race_name,
+            "race_date": str(race.race_date) if race.race_date else None,
+            "circuit": {
+                "id": race.circuit.id,
+                "name": race.circuit.name,
+                "location": race.circuit.location,
+                "country": race.circuit.country
+            } if race.circuit else None
         }
     finally:
         session.close()
