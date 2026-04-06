@@ -2,8 +2,8 @@ import sys
 from pathlib import Path
 import fastf1
 import pandas as pd
-from datetime import datetime
-from sqlalchemy.exc import IntegrityError
+from datetime import date
+from sqlalchemy import func
 
 backend_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(backend_dir))
@@ -70,7 +70,7 @@ def get_or_create_driver(session_obj, driver_abbr, driver_info=None):
     nation = str(driver_info.get('CountryCode', '')).strip()
 
     driver = Driver(
-        driver_number=None,          # intentionally omitted - reused across eras
+        driver_number=None,
         code=driver_abbr,
         first_name=first,
         last_name=last,
@@ -232,8 +232,6 @@ def load_race_weekend(year, race_name, session_obj):
         ).first()
 
         if existing_race:
-            # Check if results are already complete - skip if so
-            from sqlalchemy import func
             result_count = session_obj.query(func.count(RaceResult.id)).filter_by(
                 race_id=existing_race.id
             ).scalar()
@@ -276,16 +274,25 @@ def load_race_weekend(year, race_name, session_obj):
         session_obj.rollback()
 
 
-def load_season(year, session_obj):
+def load_season(year, session_obj, only_completed=False):
+    """
+    Load all races for a given season.
+    If only_completed=True, skips future races (useful for current season).
+    """
     print(f"\n{'#'*70}")
     print(f"# LOADING {year} SEASON")
     print(f"{'#'*70}")
 
     try:
         schedule = fastf1.get_event_schedule(year)
-        # Skip pre-season testing (round 0)
         races = schedule[schedule['RoundNumber'] > 0]
-        print(f"\nFound {len(races)} races in {year}")
+
+        if only_completed:
+            today = date.today()
+            races = races[races['EventDate'].dt.date < today]
+            print(f"\nFound {len(races)} completed races in {year} (as of {today})")
+        else:
+            print(f"\nFound {len(races)} races in {year}")
 
         for i, (_, event) in enumerate(races.iterrows(), 1):
             race_name = event['EventName']
@@ -296,44 +303,125 @@ def load_season(year, session_obj):
                 print(f"  FAILED: {race_name} -- {e}")
                 continue
 
-        print(f"\nCompleted {year} season.")
+        print(f"\nCompleted {year} season load.")
 
     except Exception as e:
         print(f"ERROR loading {year} season: {e}")
 
 
-def main():
-    print("\n" + "="*70)
-    print(" F1 HISTORICAL DATA ETL PIPELINE")
-    print("="*70)
-    print("Loading data from 2015 to 2025")
-    print("Note: 2025 data may be incomplete (season in progress)")
-    print("="*70 + "\n")
+def update_current_season(session_obj):
+    """
+    Load only new completed races for the current season.
+    Safe to run repeatedly — skips already complete races.
+    """
+    current_year = date.today().year
+    print(f"\n{'#'*70}")
+    print(f"# UPDATING {current_year} SEASON (new races only)")
+    print(f"{'#'*70}")
 
-    session_obj = get_session()
+    try:
+        schedule = fastf1.get_event_schedule(current_year)
+        today = date.today()
+        completed = schedule[
+            (schedule['RoundNumber'] > 0) &
+            (schedule['EventDate'].dt.date < today)
+        ]
+        print(f"\nCompleted races this season: {len(completed)}")
 
-    for year in range(2015, 2026):
-        try:
-            load_season(year, session_obj)
-        except Exception as e:
-            print(f"ERROR loading year {year}: {e}")
-            continue
+        new_loaded = 0
+        for _, event in completed.iterrows():
+            race_name = event['EventName']
+            existing = session_obj.query(Race).filter_by(
+                year=current_year, race_name=race_name
+            ).first()
 
-    print("\n" + "="*70)
-    print("FINAL DATABASE SUMMARY")
-    print("="*70)
+            if existing:
+                count = session_obj.query(func.count(RaceResult.id)).filter_by(
+                    race_id=existing.id
+                ).scalar()
+                if count >= 15:
+                    print(f"  Skipping {race_name} (already complete)")
+                    continue
 
+            print(f"\n  Loading {race_name}...")
+            load_race_weekend(current_year, race_name, session_obj)
+            new_loaded += 1
+
+        if new_loaded == 0:
+            print("\n  All races up to date. Nothing new to load.")
+        else:
+            print(f"\n  Loaded {new_loaded} new race(s).")
+
+    except Exception as e:
+        print(f"ERROR updating current season: {e}")
+
+
+def print_summary(session_obj):
     from sqlalchemy import text
     from models.database import create_database_engine
     engine = create_database_engine()
+    print("\n" + "="*70)
+    print("DATABASE SUMMARY")
+    print("="*70)
     with engine.connect() as conn:
         for table in ['circuits', 'drivers', 'teams', 'races',
                       'qualifying_results', 'race_results', 'lap_times', 'pit_stops', 'weather']:
             count = conn.execute(text(f"SELECT COUNT(*) FROM {table}")).fetchone()[0]
             print(f"  {table:<25} {count:>8,} rows")
 
-    print("\nETL Pipeline Complete.")
+        # Races per year
+        print("\n  Races per year:")
+        rows = conn.execute(text(
+            "SELECT year, COUNT(*) as races FROM races GROUP BY year ORDER BY year"
+        )).fetchall()
+        for r in rows:
+            print(f"    {r[0]}: {r[1]} races")
     print("="*70 + "\n")
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='F1 ETL Pipeline')
+    parser.add_argument(
+        '--mode',
+        choices=['historical', 'current', 'update'],
+        default='update',
+        help=(
+            'historical: load 2015-2025 | '
+            'current: load current season only | '
+            'update: load new races in current season (default)'
+        )
+    )
+    parser.add_argument('--year', type=int, help='Specific year to load (historical mode only)')
+    args = parser.parse_args()
+
+    session_obj = get_session()
+
+    if args.mode == 'historical':
+        print("\n" + "="*70)
+        print(" F1 HISTORICAL DATA ETL -- 2015 to 2025")
+        print("="*70)
+        years = [args.year] if args.year else range(2015, 2026)
+        for year in years:
+            try:
+                load_season(year, session_obj, only_completed=(year == date.today().year))
+            except Exception as e:
+                print(f"ERROR loading year {year}: {e}")
+
+    elif args.mode == 'current':
+        current_year = date.today().year
+        print("\n" + "="*70)
+        print(f" F1 ETL -- {current_year} SEASON (completed races only)")
+        print("="*70)
+        load_season(current_year, session_obj, only_completed=True)
+
+    elif args.mode == 'update':
+        print("\n" + "="*70)
+        print(" F1 ETL -- UPDATE CURRENT SEASON")
+        print("="*70)
+        update_current_season(session_obj)
+
+    print_summary(session_obj)
     session_obj.close()
 
 

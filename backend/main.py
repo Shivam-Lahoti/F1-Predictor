@@ -5,6 +5,7 @@ from api.drivers import router as drivers_router
 from api.circuits import router as circuits_router
 from api.stats import router as stats_router
 from api.analytics import router as analytics_router
+from api.predict import router as predict_router
 import os
 from dotenv import load_dotenv
 
@@ -29,6 +30,7 @@ app.include_router(drivers_router)
 app.include_router(circuits_router)
 app.include_router(stats_router)
 app.include_router(analytics_router)
+app.include_router(predict_router)
 
 @app.get("/")
 def read_root():

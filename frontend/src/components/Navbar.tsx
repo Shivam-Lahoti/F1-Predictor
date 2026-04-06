@@ -9,6 +9,7 @@ const Navbar = () => {
     { path: '/races', label: 'Races', icon: '🏁' },
     { path: '/drivers', label: 'Drivers', icon: '👥' },
     { path: '/analytics', label: 'Analytics', icon: '📊' },
+    { path: '/predictions', label: 'Predictions', icon: '🔮'},
   ];
 
   return (
